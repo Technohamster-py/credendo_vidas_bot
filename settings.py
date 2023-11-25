@@ -26,6 +26,6 @@ def load_config(path="settings.ini"):
         create_config(path)
 
     config = cp.ConfigParser()
-    config.read(path)
+    config.read(path, encoding='utf-8')
 
     return config
