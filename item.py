@@ -1,5 +1,6 @@
 import sqlite3 as sql
 from datetime import datetime
+import logging
 
 
 class Item:
@@ -40,19 +41,58 @@ class Item:
     def db_execute(self, query):
         connection = sql.connect('db.sqlite3')
         cursor = connection.cursor()
-        return cursor.execute(query).fetchall()
+        if 'INSERT' in query or 'UPDATE' in query:
+            try:
+                cursor.execute(query)
+                connection.commit()
+                return True
+            except Exception as exception:
+                print(exception)
+                return False
+        else:
+            try:
+                return cursor.execute(query).fetchall()
+            except Exception as exception:
+                print(exception)
+                return False
 
-    def update_last_status_change(self, last_name, first_name):
+    def update_last_status_change(self, action, last_name='Админ', first_name='Админ'):
+        max_id = self.db_execute("SELECT id from store_operation")[-1][0]
         self.last_status_change = datetime.now().isoformat(sep=" ", timespec='seconds')
-        query = ""
+        query = f"INSERT INTO store_operation VALUES ({max_id+1}, '{first_name}', '{last_name}', '{action}', '{self.last_status_change}', '{self.id}');"
+        return self.db_execute(query)
 
-    def take_item(self, id=1):
-        query = f"SELECT * FROM store_item WHERE {id=}"
-        print(self.db_execute(query))
+    def is_available(self):
+        return self.quantity_available > 0
 
-    def put_item(self, id):
-        connection = sql.connect('db.sqlite3')
-        query = connection.cursor()
+    def take(self, last_name='Админ', first_name='Админ', is_passed=False):
+        if self.is_available() or is_passed:
+            if not is_passed:
+                self.quantity_available -= 1
+            if self.quantity_available == 0:
+                self.status = 0
+            action = 'TAKE'
+
+            if self.update_last_status_change(action, last_name, first_name):
+                query = f"UPDATE store_item SET status = {self.status}, quantity_available = {self.quantity_available}, last_status_change = '{self.last_status_change}' WHERE id = {self.id}"
+                return self.db_execute(query)
+            else:
+                return False
+        else:
+            return -1
+
+    def put(self, last_name='Админ', first_name='Админ'):
+        if self.quantity_available == self.quantity_total:
+            return -1
+        self.quantity_available += 1
+        self.status = 1
+        action = 'RETURN'
+        if self.update_last_status_change(action, last_name, first_name):
+            query = f"UPDATE store_item SET status = {self.status}, quantity_available = {self.quantity_available}, last_status_change = '{self.last_status_change}' WHERE id = {self.id}"
+            return self.db_execute(query)
+        else:
+            return False
 
 
 item = Item(35)
+item.put()
