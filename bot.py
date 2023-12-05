@@ -1,12 +1,9 @@
 import settings
-import readqr as qr
-import database as db
+import qr_functions as qr
 import os
-import time
-#import qrcode as qr
 import telebot
 from telebot import types
-
+from item import Item
 
 config = settings.load_config()
 TOKEN = config.get('Settings', 'token')
@@ -73,7 +70,7 @@ def take(message):
     downloaded_file = bot.download_file(file_info.file_path)
     with open(filename, 'wb') as new_file:
         new_file.write(downloaded_file)
-    data = qr.read_qr(filename)
+    data = qr.read_qr(config.get('Settings', 'rgx'), filename)
     os.remove(filename)
 
     bot.send_message(message.chat.id, config.get('Messages', 'operation_succ'), reply_markup=main_menu())
