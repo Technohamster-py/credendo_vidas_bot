@@ -1,11 +1,11 @@
 import sqlite3 as sql
 from datetime import datetime
-import logging
 
 
 class Item:
-    def __init__(self, id):
+    def __init__(self, id, database='db.sqlite3'):
         self.id = id
+        self.database = database
         db_row = self.db_execute(f'SELECT * FROM store_item WHERE {id=}')[0]
         self.name = db_row[1]
         self.position = db_row[2]
@@ -13,10 +13,10 @@ class Item:
         self.material = db_row[4]
         self.status = db_row[5]
         self.last_status_change = db_row[6]
-        self.category = self.db_execute(f'SELECT name FROM store_category WHERE id={db_row[7]}')[0][0]
-        self.quantity_available = db_row[8]
-        self.quantity_total = db_row[9]
-        self.photo = db_row[10]
+        self.category = self.db_execute(f'SELECT name FROM store_category WHERE id={db_row[8]}')[0][0]
+        self.quantity_available = db_row[9]
+        self.quantity_total = db_row[10]
+        self.photo = db_row[7]
 
     def __str__(self):
         s = (f"Item: {self.name}\n"
@@ -39,7 +39,8 @@ class Item:
             return "Неизвестен"
 
     def db_execute(self, query):
-        connection = sql.connect('db.sqlite3')
+        connection = sql.connect(self.database)
+        print('connecting to database')
         cursor = connection.cursor()
         if 'INSERT' in query or 'UPDATE' in query:
             try:
@@ -92,7 +93,3 @@ class Item:
             return self.db_execute(query)
         else:
             return False
-
-
-item = Item(35)
-item.put()

@@ -1,3 +1,5 @@
-/settings.ini
 /whitelist.txt
 /static/generation/
+/private_settings.ini
+/generator.py
+/db.sqlite3

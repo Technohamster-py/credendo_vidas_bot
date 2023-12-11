@@ -15,7 +15,7 @@ def read_qr(rgx, path='static/photo.jpg'):
     detector = cv2.QRCodeDetector()
     data, bbox, straight_qrqode = detector.detectAndDecode(img)
     if re.match(rgx, data) is not None:
-        return data[9:11]
+        return data[9:12]
     else:
         return False
 
